@@ -16,7 +16,7 @@ class Node(object):
 		#self.myhash = None
 
 	def __str__(self):
-		return str((self.x,self.y))
+		return str((self.x,self.y, self.name))
 		
 	'''def __repr__(self):
 		return str((self.x,self.y))
@@ -32,61 +32,93 @@ class Node(object):
 
 	def linear_repr(self):
 		return "["+''.join(self.l)+','+''.join(reversed(self.s))+','+''.join(reversed(self.r))+"]"'''
-	
+
+
+
+
 
 def getNodeFromLabel(nodes, label):
-	for i in range(len(nodes)):
-		if nodes[i].name == label:
-			return nodes[i]
+	for nodo in nodes:
+		print "Nodo in getnodes: "+ str(nodo)
+		print nodo.name + "--" +label
+		if nodo.name == label:
+			return nodo
 	print "Error in getNodeFromLabel, label not found"
 	return None	
 	
 	
 def genChildren(nodes, new_label, rule, old_label):
 	old_node = getNodeFromLabel(nodes, old_label)
-		
-		
+	#TODO: 
+	# inserim primo nodo,
+	# 2 nodi presenti
+	# nessun nodo presente, ma board non vuota
+	
 	newnodes = None
-	for i in range(len(nodes)):
+	for nodo in nodes:
+		print nodo
 		if rule == LEFT:
-			if nodes[i].y == old_node.y and nodes[i].x <= old_node.x:
-				newnode = Node(nodes[i].x -1, nodes[i].y, new_label)
-				newnodes = deepcopy(nodes)
-				for i in range(len(newnodes)):
-					if newnodes[i].x <= newnode.x:
-						newnodes[i].x = newnodes[i].x -1
+			if nodo.y == old_node.y and nodo.x <= old_node.x:
+				newnode = Node(nodo.x -1, nodo.y, new_label)
+				newnodes = nodes[:]
+				for newnodo in newnodes:
+					if newnodo.x <= newnode.x:
+						newnodo.x = newnodo.x -1
 				newnodes.append(newnode)
 				yield newnodes
 		
 		elif rule == RIGHT:
-			if nodes[i].y == old_node.y and nodes[i].x >= old_node.x:
-				newnode = Node(nodes[i].x +1, nodes[i].y, new_label)
-				newnodes = deepcopy(nodes)
-				for i in range(len(newnodes)):
-					if newnodes[i].x >= newnode.x:
-						newnodes[i].x = newnodes[i].x + 1
+			if nodo.y == old_node.y and nodo.x >= old_node.x:
+				newnode = Node(nodo.x +1, nodo.y, new_label)
+				newnodes = nodes[:]
+				for newnodo in newnodes:
+					if newnodo.x >= newnode.x:
+						newnodo.x = newnodo.x + 1
 				newnodes.append(newnode)
 				yield newnodes
 
 		elif rule == UNDER:	
-			if nodes[i].x == old_node.x and nodes[i].y <= old_node.y:	
-				newnode = Node(nodes[i].x, nodes[i].y-1, new_label)
-				newnodes = deepcopy(nodes)
-				for i in range(len(newnodes)):
-					if newnodes[i].y <= newnode.y:
-						newnodes[i].y = newnodes[i].y - 1
+			if nodo.x == old_node.x and nodo.y <= old_node.y:	
+				newnode = Node(nodo.x, nodo.y-1, new_label)
+				newnodes = nodes[:]
+				for newnodo in newnodes:
+					if newnodo.y <= newnode.y:
+						newnodo.y = newnodo.y - 1
 				newnodes.append(newnode)
 				yield newnodes
 		
 		elif rule == OVER:
-			if nodes[i].x == old_node.x and nodes[i].y >= old_node.y:	
-				newnode = Node(nodes[i].x, nodes[i].y+1, new_label)
-				newnodes = deepcopy(nodes)
-				for i in range(len(newnodes)):
-					if newnodes[i].y >= newnode.x:
-						newnodes[i].y = newnodes[i].y + 1
+			if nodo.x == old_node.x and nodo.y >= old_node.y:	
+				newnode = Node(nodo.x, nodo.y+1, new_label)
+				newnodes = nodes[:]
+				for newnodo in newnodes:
+					if newnodo.y >= newnode.x:
+						newnodo.y = newnodo.y + 1
 				newnodes.append(newnode)
 				yield newnodes
+	
+def main():
+	nodes = []
+	nodes.append(Node(0,0,'A'))
+	print nodes[0]
+	plans = []
+	
+	for next_plan in genChildren(nodes, 'B', LEFT, 'A'):
+		plans.append(next_plan)
+		print "A plan:"
+		for node in next_plan:
+			print(node)
+		print "-----"
+			
+	for plan in plans:
+		for next_plan in genChildren(plan, 'C', OVER, 'A'):
+			print "A plan:"
+			for node in next_plan:
+				print(node)
+			print "-----"
+
+			
+main()
 	
 def equalizer(plan, origin):
 	skew_x = 0
@@ -126,8 +158,9 @@ def plans_eq(plan1, plan2):
 
 
 def filter(plan, label1, rule, label2):
-	n1 = None
-	n2 = None
+	n1 = getNodeFromLabel(plan, label1)
+	n2 = getNodeFromLabel(plan, label2)
+	
 	for i in range(len(plan)):
 		if plan[i].name == label1:
 			n1 = plan[i]
