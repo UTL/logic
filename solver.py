@@ -6,7 +6,38 @@ FILENAME = "result.log"
 LEFT = 1
 RIGHT = 2
 OVER = 3
-UNDER = 4
+UNDER = 4 
+EVERYWHERE = 5
+
+'''
+Set this variable to 'True' to force the nodes to stay on the same line
+set it to false to avoid that.
+
+Example: 
+STRICT = True
+A,x=0,y=0 Left B,x=1,y=0 ? --> True
+A,x=0,y=0 Left B,x=1,y=1 ? --> False
+
+STRICT = False
+A,x=0,y=0 Left B,x=1,y=0 ? --> True
+A,x=0,y=0 Left B,x=1,y=1 ? --> True
+
+'''
+STRICT = True
+
+'''
+def verify_rule(node1, rule, node2):
+	if RIGHTRULE == STRICT:
+		
+	else:
+'''
+def opposite(rule):
+	return {
+		LEFT: RIGHT,
+		RIGHT: LEFT,
+		OVER: UNDER,
+		UNDER: OVER,
+	}[rule]
 
 class Node(object):
 	def __init__(self, x, y, name):
@@ -47,79 +78,115 @@ def getNodeFromLabel(nodes, label):
 	return None	
 	
 	
-def genChildren(nodes, new_label, rule, old_label):
-	old_node = getNodeFromLabel(nodes, old_label)
-	#TODO: 
-	# inserim primo nodo,
-	# 2 nodi presenti
-	# nessun nodo presente, ma board non vuota
+def genChildren(nodes, label1, rule, label2):
+	node1 = getNodeFromLabel(nodes, label1)
+	node2 = getNodeFromLabel(nodes, label2)
 	
+	plans = []
+	label = None
+	node = None
+	
+	if node1 == None and node2 == None:
+		#board vuota
+		if nodes == []:
+			plans.append(nodes)
+			label = label1
+			node = Node(0,0,label2)
+			nodes.append(node)
+		#un nodo trovato
+		elif node1 != None and node2 == None:
+			node = node1
+			label = label2
+			plans.append(nodes)
+		#l'altro nodo trovato
+		elif node1 == None and  node2 != None:
+			node = node2
+			label = label1
+			rule = opposite(rule)
+			plans.append(nodes)
+		#entrambi i nodi trovati
+		elif node1 != None and node2 != None:
+			plans = []
+			if filter(nodes, label1, rule, label2):
+				yield nodes
+		#nessun nodo trovato e board non vuota
+		else:
+			for plan in addOneNode(nodes, label1, EVERYWHERE, None):
+				plans.append(plan)
+			plans = equalize_plans(plans)
+			plans = make_set(plans)
+			label  = label2
+				
+		for plan in plans:
+			yield addOneNode(plan, label, rule, node)
+	
+def addOneNode(nodes, new_label, rule, node1):	
 	newnodes = None
 	for nodo in nodes:
-		print nodo
-		if rule == LEFT:
-			if nodo.y == old_node.y and nodo.x <= old_node.x:
+		if rule == LEFT or rule == EVERYWHERE:
+			if rule == EVERYWHERE or nodo.y == node1.y and nodo.x <= node1.x :
 				newnode = Node(nodo.x -1, nodo.y, new_label)
 				newnodes = nodes[:]
-				for newnodo in newnodes:
-					if newnodo.x <= newnode.x:
-						newnodo.x = newnodo.x -1
+				for tomove in newnodes:
+					if tomove.x <= newnode.x and tomove != node1:
+						tomove.x = tomove.x -1
 				newnodes.append(newnode)
 				yield newnodes
 		
-		elif rule == RIGHT:
-			if nodo.y == old_node.y and nodo.x >= old_node.x:
+		elif rule == RIGHT or rule == EVERYWHERE:
+			if rule == EVERYWHERE or nodo.y == node1.y and nodo.x >= node1.x:
 				newnode = Node(nodo.x +1, nodo.y, new_label)
 				newnodes = nodes[:]
-				for newnodo in newnodes:
-					if newnodo.x >= newnode.x:
-						newnodo.x = newnodo.x + 1
+				for tomove in newnodes:
+					if tomove.x >= newnode.x and tomove != node1:
+						tomove.x = tomove.x + 1
 				newnodes.append(newnode)
 				yield newnodes
 
-		elif rule == UNDER:	
-			if nodo.x == old_node.x and nodo.y <= old_node.y:	
+		elif rule == UNDER or rule == EVERYWHERE:	
+			if rule == EVERYWHERE or nodo.x == node1.x and nodo.y <= node1.y:	
 				newnode = Node(nodo.x, nodo.y-1, new_label)
 				newnodes = nodes[:]
-				for newnodo in newnodes:
-					if newnodo.y <= newnode.y:
-						newnodo.y = newnodo.y - 1
+				for tomove in newnodes:
+					if tomove.y <= newnode.y and tomove != node1:
+						tomove.y = tomove.y - 1
 				newnodes.append(newnode)
 				yield newnodes
 		
-		elif rule == OVER:
-			if nodo.x == old_node.x and nodo.y >= old_node.y:	
+		elif rule == OVER or rule == EVERYWHERE:
+			if rule == EVERYWHERE or nodo.x == node1.x and nodo.y >= node1.y:	
 				newnode = Node(nodo.x, nodo.y+1, new_label)
 				newnodes = nodes[:]
-				for newnodo in newnodes:
-					if newnodo.y >= newnode.x:
-						newnodo.y = newnodo.y + 1
+				for tomove in newnodes:
+					if tomove.y >= newnode.x and tomove != node1:
+						tomove.y = tomove.y + 1
 				newnodes.append(newnode)
 				yield newnodes
 	
 def main():
 	nodes = []
-	nodes.append(Node(0,0,'A'))
-	print nodes[0]
+	'''nodes.append(Node(0,0,'A'))
+	print nodes[0]'''
 	plans = []
 	
-	for next_plan in genChildren(nodes, 'B', LEFT, 'A'):
+	for next_plan in genChildren(nodes, 'B', OVER, 'A'):
 		plans.append(next_plan)
-		print "A plan:"
+		print "A plan:" + str(next_plan)
 		for node in next_plan:
-			print(node)
+			for elem in node:
+				print "Node of the plan: " + str(elem)
 		print "-----"
-			
+'''			
 	for plan in plans:
 		for next_plan in genChildren(plan, 'C', OVER, 'A'):
 			print "A plan:"
 			for node in next_plan:
 				print(node)
-			print "-----"
+			print "-----"'''
 
 			
 main()
-	
+
 def equalizer(plan, origin):
 	skew_x = 0
 	skew_y = 0
@@ -131,6 +198,17 @@ def equalizer(plan, origin):
 		plan[i].x = plan[i].x - skew_x
 		plan[i].y = plan[i].y - skew_y
 	return plan
+	
+def equalize_plans(plans):
+	equalizeds = []
+	if plans != [] and plans[0] != None:
+		label = plan[0][0]
+		for plan in plans:
+			equalizeds.append(equalizer(plan, plans[0][0]))
+		return equalizeds
+	else: 
+		print "Error empty plans!"
+		return None
 	
 def make_set(plans):
 	newplans = []
