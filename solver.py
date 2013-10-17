@@ -70,23 +70,22 @@ class Node(object):
 
 def getNodeFromLabel(nodes, label):
 	for nodo in nodes:
-		print "Nodo in getnodes: "+ str(nodo)
-		print nodo.name + "--" +label
 		if nodo.name == label:
 			return nodo
-	print "Error in getNodeFromLabel, label not found"
+	print "Label not found"
 	return None	
 	
 	
 def genChildren(nodes, label1, rule, label2):
 	node1 = getNodeFromLabel(nodes, label1)
 	node2 = getNodeFromLabel(nodes, label2)
-	
+	print "lnodes"+str(len(nodes))
 	plans = []
 	label = None
 	node = None
 	
 	if node1 == None and node2 == None:
+		print "Inizializing board"
 		#board vuota
 		if nodes == []:
 			plans.append(nodes)
@@ -95,22 +94,28 @@ def genChildren(nodes, label1, rule, label2):
 			nodes.append(node)
 		#un nodo trovato
 		elif node1 != None and node2 == None:
+			print "One node found"
 			node = node1
 			label = label2
 			plans.append(nodes)
 		#l'altro nodo trovato
 		elif node1 == None and  node2 != None:
+			print "One node found"
 			node = node2
 			label = label1
 			rule = opposite(rule)
 			plans.append(nodes)
 		#entrambi i nodi trovati
 		elif node1 != None and node2 != None:
+			print "Two nodes found"
 			plans = []
 			if filter(nodes, label1, rule, label2):
 				yield nodes
 		#nessun nodo trovato e board non vuota
 		else:
+			print "n1"+str(node1)
+			print "n2"+str(node2)
+			print "Nodes not found, board not empty"
 			for plan in addOneNode(nodes, label1, EVERYWHERE, None):
 				plans.append(plan)
 			plans = equalize_plans(plans)
@@ -118,7 +123,8 @@ def genChildren(nodes, label1, rule, label2):
 			label  = label2
 				
 		for plan in plans:
-			yield addOneNode(plan, label, rule, node)
+			for node in addOneNode(plan, label, rule, node):
+				yield node
 	
 def addOneNode(nodes, new_label, rule, node1):	
 	newnodes = None
@@ -167,15 +173,31 @@ def main():
 	nodes = []
 	'''nodes.append(Node(0,0,'A'))
 	print nodes[0]'''
+	rules = [['B', RIGHT, 'A'],['B', RIGHT, 'A']]
 	plans = []
 	
-	for next_plan in genChildren(nodes, 'B', OVER, 'A'):
-		plans.append(next_plan)
-		print "A plan:" + str(next_plan)
-		for node in next_plan:
-			for elem in node:
-				print "Node of the plan: " + str(elem)
-		print "-----"
+	rule = rules.pop()
+	for next_plan in genChildren(nodes, rule[0], rule[1], rule[2]):
+			plans.append(next_plan)
+			print "A plan:" + str(next_plan)
+			for node in next_plan:
+				print "Node of the plan: " + str(node)
+			print "-----"
+	
+	while rules != [] and plans != [] :
+		print "While!!"
+		rule = rules.pop()
+		print "rulla "+str(rule[1])
+		new_plans = []
+		for plan in plans:
+			for next_plan in genChildren(plan, 'B', RIGHT, 'A'):
+				new_plans.append(next_plan)
+				print "A plan:" + str(next_plan)
+				for node in next_plan:
+					for elem in node:
+						print "Node of the plan: " + str(elem)
+				print "-----"
+		plans = new_plans[:]
 '''			
 	for plan in plans:
 		for next_plan in genChildren(plan, 'C', OVER, 'A'):
