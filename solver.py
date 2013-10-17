@@ -75,56 +75,86 @@ def getNodeFromLabel(nodes, label):
 	print "Label not found"
 	return None	
 	
+def filtro(plan, label1, rule, label2):
+	n1 = getNodeFromLabel(plan, label1)
+	n2 = getNodeFromLabel(plan, label2)
+	
+	for i in range(len(plan)):
+		if plan[i].name == label1:
+			n1 = plan[i]
+		elif plan[i].name == label2:
+			n2 = plan[i]
+	if rule == LEFT:
+		if n1.y == n2.y and n1.x < n2.x:
+			return True
+		return False
+	elif rule == RIGHT:
+		if n1.y == n2.y and n1.x > n2.x:
+			return True
+		return False
+	elif rule == OVER:
+		if n1.x == n2.x and n1.y > n2.y:
+			return True
+		return False	
+	elif rule == UNDER:
+		if n1.x == n2.x and n1.y > n2.y:
+			return True
+		return False
+	
 	
 def genChildren(nodes, label1, rule, label2):
 	node1 = getNodeFromLabel(nodes, label1)
 	node2 = getNodeFromLabel(nodes, label2)
-	print "lnodes"+str(len(nodes))
+	print "label1 "+str(label1)
+	print "label2 "+str(label2)
+	print "lnodes "+str(len(nodes))
+	print "node1 "+str(node1)
+	print "node2 "+str(node2)
+	
 	plans = []
 	label = None
 	node = None
 	
-	if node1 == None and node2 == None:
+	#board vuota
+	if nodes == []:
 		print "Inizializing board"
-		#board vuota
-		if nodes == []:
-			plans.append(nodes)
-			label = label1
-			node = Node(0,0,label2)
-			nodes.append(node)
-		#un nodo trovato
-		elif node1 != None and node2 == None:
-			print "One node found"
-			node = node1
-			label = label2
-			plans.append(nodes)
-		#l'altro nodo trovato
-		elif node1 == None and  node2 != None:
-			print "One node found"
-			node = node2
-			label = label1
-			rule = opposite(rule)
-			plans.append(nodes)
-		#entrambi i nodi trovati
-		elif node1 != None and node2 != None:
-			print "Two nodes found"
-			plans = []
-			if filter(nodes, label1, rule, label2):
-				yield nodes
-		#nessun nodo trovato e board non vuota
-		else:
-			print "n1"+str(node1)
-			print "n2"+str(node2)
-			print "Nodes not found, board not empty"
-			for plan in addOneNode(nodes, label1, EVERYWHERE, None):
-				plans.append(plan)
-			plans = equalize_plans(plans)
-			plans = make_set(plans)
-			label  = label2
+		plans.append(nodes)
+		label = label1
+		node = Node(0,0,label2)
+		nodes.append(node)
+	#un nodo trovato
+	elif node1 != None and node2 == None:
+		print "One node found"
+		node = node1
+		label = label2
+		plans.append(nodes)
+	#l'altro nodo trovato
+	elif node1 == None and  node2 != None:
+		print "One node found"
+		node = node2
+		label = label1
+		rule = opposite(rule)
+		plans.append(nodes)
+	#entrambi i nodi trovati
+	elif node1 != None and node2 != None:
+		print "Two nodes found"
+		plans = []
+		if filtro(nodes, label1, rule, label2):
+			yield nodes
+	#nessun nodo trovato e board non vuota
+	else:
+		print "n1"+str(node1)
+		print "n2"+str(node2)
+		print "Nodes not found, board not empty"
+		for plan in addOneNode(nodes, label1, EVERYWHERE, None):
+			plans.append(plan)
+		plans = equalize_plans(plans)
+		plans = make_set(plans)
+		label  = label2
 				
-		for plan in plans:
-			for node in addOneNode(plan, label, rule, node):
-				yield node
+	for plan in plans:
+		for node in addOneNode(plan, label, rule, node):
+			yield node
 	
 def addOneNode(nodes, new_label, rule, node1):	
 	newnodes = None
@@ -173,10 +203,11 @@ def main():
 	nodes = []
 	'''nodes.append(Node(0,0,'A'))
 	print nodes[0]'''
-	rules = [['B', RIGHT, 'A'],['B', RIGHT, 'A']]
+	rules = [['B', RIGHT, 'A'],['B', LEFT, 'A']]
 	plans = []
 	
 	rule = rules.pop()
+	print "rulla "+str(rule[1])
 	for next_plan in genChildren(nodes, rule[0], rule[1], rule[2]):
 			plans.append(next_plan)
 			print "A plan:" + str(next_plan)
@@ -190,12 +221,11 @@ def main():
 		print "rulla "+str(rule[1])
 		new_plans = []
 		for plan in plans:
-			for next_plan in genChildren(plan, 'B', RIGHT, 'A'):
+			for next_plan in genChildren(nodes, rule[0], rule[1], rule[2]):
 				new_plans.append(next_plan)
 				print "A plan:" + str(next_plan)
 				for node in next_plan:
-					for elem in node:
-						print "Node of the plan: " + str(elem)
+					print "Node of the plan: " + str(node)
 				print "-----"
 		plans = new_plans[:]
 '''			
@@ -257,29 +287,3 @@ def plans_eq(plan1, plan2):
 	
 
 
-def filter(plan, label1, rule, label2):
-	n1 = getNodeFromLabel(plan, label1)
-	n2 = getNodeFromLabel(plan, label2)
-	
-	for i in range(len(plan)):
-		if plan[i].name == label1:
-			n1 = plan[i]
-		elif plan[i].name == label2:
-			n2 = plan[i]
-	if rule == LEFT:
-		if n1.y == n2.y and n1.x < n2.x:
-			return True
-		return False
-	elif rule == RIGHT:
-		if n1.y == n2.y and n1.x > n2.x:
-			return True
-		return False
-	elif rule == OVER:
-		if n1.x == n2.x and n1.y > n2.y:
-			return True
-		return False	
-	elif rule == UNDER:
-		if n1.x == n2.x and n1.y > n2.y:
-			return True
-		return False
-	
