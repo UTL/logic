@@ -106,13 +106,13 @@ def filtro(plan, label1, rule, label2):
 def equalizer(plan, origin):
 	skew_x = 0
 	skew_y = 0
-	for i in range(len(plan)):
-		if plan[i].name == origin.name:
-			skew_x = plan[i].x -origin.x
-			skew_y = plan[i].y -origin.y
-	for i in range(len(plan)):
-		plan[i].x = plan[i].x - skew_x
-		plan[i].y = plan[i].y - skew_y
+	for node in plan:
+		if node.name == origin.name:
+			skew_x = node.x -origin.x
+			skew_y = node.y -origin.y
+	for node in plan:
+		node.x = node.x - skew_x
+		node.y = node.y - skew_y
 	return plan
 	
 def equalize_plans(plans):
@@ -214,54 +214,65 @@ def genLeft(nodo, node1, new_label, newnodes):
 	newnodes.append(newnode)
 	return newnodes
 
+def genRight(nodo, node1, new_label, newnodes):
+	newnode = Node(nodo.x +1, nodo.y, new_label)
+	for tomove in newnodes:
+		if tomove.x >= newnode.x and tomove != node1:
+			tomove.x = tomove.x + 1
+	newnodes.append(newnode)
+	return newnodes
+
+def genUnder(nodo, node1, new_label, newnodes):
+	newnode = Node(nodo.x, nodo.y-1, new_label)
+	for tomove in newnodes:
+		if tomove.y <= newnode.y and tomove != node1:
+			tomove.y = tomove.y - 1
+	newnodes.append(newnode)
+	return newnodes
+
+def genOver(nodo, node1, new_label, newnodes):
+	newnode = Node(nodo.x, nodo.y+1, new_label)
+	for tomove in newnodes:
+		if tomove.y >= newnode.x and tomove != node1:
+			tomove.y = tomove.y + 1
+	newnodes.append(newnode)
+	return newnodes
+	
+def clonePlan(oldplan):	
+	newplan = []
+	for old_node in oldplan:
+		newplan.append(Node(old_node.x,old_node.y,old_node.name))
+	return newplan
+			
 def addOneNode(nodes, new_label, rule, node1):	
 	for nodo in nodes:
 		newnodes = []
 		for old_node in nodes:
 			newnodes.append(Node(old_node.x,old_node.y,old_node.name))
 		#newnodes = nodes[:]
-		if rule == LEFT or rule == EVERYWHERE:
-			if rule == EVERYWHERE or nodo.y == node1.y and nodo.x <= node1.x :
-				yield genLeft(nodo, node1, new_label, newnodes)
-				'''newnode = Node(nodo.x -1, nodo.y, new_label)
-				for tomove in newnodes:
-					if tomove.x <= newnode.x and tomove != node1:
-						tomove.x = tomove.x -1
-				newnodes.append(newnode)
-				yield newnodes
-'''		
-		elif rule == RIGHT or rule == EVERYWHERE:
-			if rule == EVERYWHERE or nodo.y == node1.y and nodo.x >= node1.x:
-				newnode = Node(nodo.x +1, nodo.y, new_label)
-				for tomove in newnodes:
-					if tomove.x >= newnode.x and tomove != node1:
-						tomove.x = tomove.x + 1
-				newnodes.append(newnode)
-				yield newnodes
-
-		elif rule == UNDER or rule == EVERYWHERE:	
-			if rule == EVERYWHERE or nodo.x == node1.x and nodo.y <= node1.y:	
-				newnode = Node(nodo.x, nodo.y-1, new_label)
-				for tomove in newnodes:
-					if tomove.y <= newnode.y and tomove != node1:
-						tomove.y = tomove.y - 1
-				newnodes.append(newnode)
-				yield newnodes
+		if rule == EVERYWHERE:
+			yield genLeft(nodo, node1, new_label, newnodes)
+			yield genRight(nodo, node1, new_label, newnodes)
+			yield genUnder(nodo, node1, new_label, newnodes)
+			yield genOver(nodo, node1, new_label, newnodes)
 		
-		elif rule == OVER or rule == EVERYWHERE:
-			if rule == EVERYWHERE or nodo.x == node1.x and nodo.y >= node1.y:	
-				newnode = Node(nodo.x, nodo.y+1, new_label)
-				for tomove in newnodes:
-					if tomove.y >= newnode.x and tomove != node1:
-						tomove.y = tomove.y + 1
-				newnodes.append(newnode)
-				yield newnodes
+		elif rule == RIGHT and nodo.y == node1.y and nodo.x >= node1.x:
+			yield genRight(nodo, node1, new_label, newnodes)
+
+		elif rule == UNDER and nodo.x == node1.x and nodo.y <= node1.y:	
+			yield genUnder(nodo, node1, new_label, newnodes)
+		
+		elif rule == OVER and nodo.x == node1.x and nodo.y >= node1.y:	
+			yield genOver(nodo, node1, new_label, newnodes)
+			
+		elif rule == LEFT and nodo.y == node1.y and nodo.x <= node1.x :
+			yield genLeft(nodo, node1, new_label, newnodes)
 	
 def main():
 	nodes = []
 	'''nodes.append(Node(0,0,'A'))
 	print nodes[0]'''
-	rules = [['B', LEFT, 'A'],['A', LEFT, 'D']]
+	rules = [['B', LEFT, 'A'],['D', LEFT, 'C']]
 	plans = []
 	
 	rule = rules.pop()
