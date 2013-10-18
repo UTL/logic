@@ -165,6 +165,8 @@ def genChildren(nodes, label1, rule, label2):
 	label = None
 	node = None
 	
+	everywhere = False
+	
 	#board vuota
 	if nodes == []:
 		print "Inizializing board"
@@ -201,10 +203,14 @@ def genChildren(nodes, label1, rule, label2):
 		plans = equalize_plans(plans)
 		plans = make_set(plans)
 		label  = label2
+		everywhere = True
 				
 	for plan in plans:
-		for node in addOneNode(plan, label, rule, node):
-			yield node
+		#se abbiamo generato piu piani bisogna trovare uno ad uno il nuovo nodo
+		if everywhere:
+			node = getNodeFromLabel(plan, label1)
+		for nodus in addOneNode(plan, label, rule, node):
+			yield nodus
 
 def genLeft(nodo, node1, new_label, newnodes):
 	newnode = Node(nodo.x -1, nodo.y, new_label)
@@ -246,27 +252,32 @@ def clonePlan(oldplan):
 			
 def addOneNode(nodes, new_label, rule, node1):	
 	for nodo in nodes:
-		newnodes = []
-		for old_node in nodes:
-			newnodes.append(Node(old_node.x,old_node.y,old_node.name))
+		#FIXME! Se fosse programmato meglio non ce ne sarebbe bisogno! I vari gen non dovrebbero 
+		# toccacciare le variabili in ingresso
+		newnodes = clonePlan(nodes)
+		
 		#newnodes = nodes[:]
 		if rule == EVERYWHERE:
 			yield genLeft(nodo, node1, new_label, newnodes)
+			newnodes = clonePlan(nodes)
 			yield genRight(nodo, node1, new_label, newnodes)
+			newnodes = clonePlan(nodes)
 			yield genUnder(nodo, node1, new_label, newnodes)
+			newnodes = clonePlan(nodes)
 			yield genOver(nodo, node1, new_label, newnodes)
 		
-		elif rule == RIGHT and nodo.y == node1.y and nodo.x >= node1.x:
-			yield genRight(nodo, node1, new_label, newnodes)
-
-		elif rule == UNDER and nodo.x == node1.x and nodo.y <= node1.y:	
-			yield genUnder(nodo, node1, new_label, newnodes)
-		
-		elif rule == OVER and nodo.x == node1.x and nodo.y >= node1.y:	
-			yield genOver(nodo, node1, new_label, newnodes)
+		else:
+			if rule == RIGHT and nodo.y == node1.y and nodo.x >= node1.x:
+				yield genRight(nodo, node1, new_label, newnodes)
+	
+			elif rule == UNDER and nodo.x == node1.x and nodo.y <= node1.y:	
+				yield genUnder(nodo, node1, new_label, newnodes)
 			
-		elif rule == LEFT and nodo.y == node1.y and nodo.x <= node1.x :
-			yield genLeft(nodo, node1, new_label, newnodes)
+			elif rule == OVER and nodo.x == node1.x and nodo.y >= node1.y:	
+				yield genOver(nodo, node1, new_label, newnodes)
+				
+			elif rule == LEFT and nodo.y == node1.y and nodo.x <= node1.x :
+				yield genLeft(nodo, node1, new_label, newnodes)
 	
 def main():
 	nodes = []
