@@ -78,7 +78,9 @@ def getNodeFromLabel(nodes, label):
 def filtro(plan, label1, rule, label2):
 	n1 = getNodeFromLabel(plan, label1)
 	n2 = getNodeFromLabel(plan, label2)
-	
+	print "filter n1" + str(n1)
+	print "filter n2" + str(n2)
+
 	for i in range(len(plan)):
 		if plan[i].name == label1:
 			n1 = plan[i]
@@ -100,8 +102,53 @@ def filtro(plan, label1, rule, label2):
 		if n1.x == n2.x and n1.y > n2.y:
 			return True
 		return False
+
+def equalizer(plan, origin):
+	skew_x = 0
+	skew_y = 0
+	for i in range(len(plan)):
+		if plan[i].name == origin.name:
+			skew_x = plan[i].x -origin.x
+			skew_y = plan[i].y -origin.y
+	for i in range(len(plan)):
+		plan[i].x = plan[i].x - skew_x
+		plan[i].y = plan[i].y - skew_y
+	return plan
 	
+def equalize_plans(plans):
+	equalizeds = []
+	if plans != [] and plans[0] != None:
+		#label = plans[0][0]
+		for plan in plans:
+			equalizeds.append(equalizer(plan, plans[0][0]))
+		return equalizeds
+	else: 
+		print "Error empty plans!"
+		return None
+
+def plans_eq(plan1, plan2):
+	if len(plan1) != len(plan2):
+		return False
+	for i in range(len(plan1)):
+		eq = False
+		for j in range(len(plan2)):
+			if plan1[i] == plan2[j]:
+				eq = True
+		if not eq:
+			return False
+	return True
 	
+def make_set(plans):
+	newplans = []
+	for i in range(len(plans)):
+		present = False
+		for j in range(len(newplans)):
+			if plans_eq(plans[i], newplans[j]):
+				present = True
+		if not present:
+			newplans.append(plans[i])
+	return newplans
+
 def genChildren(nodes, label1, rule, label2):
 	node1 = getNodeFromLabel(nodes, label1)
 	node2 = getNodeFromLabel(nodes, label2)
@@ -110,7 +157,10 @@ def genChildren(nodes, label1, rule, label2):
 	print "lnodes "+str(len(nodes))
 	print "node1 "+str(node1)
 	print "node2 "+str(node2)
-	
+	print "-.-.-."
+	for elem in nodes:
+		print "nodo: "+str(elem)
+	print "-.-.-."
 	plans = []
 	label = None
 	node = None
@@ -124,16 +174,16 @@ def genChildren(nodes, label1, rule, label2):
 		nodes.append(node)
 	#un nodo trovato
 	elif node1 != None and node2 == None:
-		print "One node found"
+		print "One node found A"
 		node = node1
+		rule = opposite(rule)
 		label = label2
 		plans.append(nodes)
 	#l'altro nodo trovato
 	elif node1 == None and  node2 != None:
-		print "One node found"
+		print "One node found B"
 		node = node2
 		label = label1
-		rule = opposite(rule)
 		plans.append(nodes)
 	#entrambi i nodi trovati
 	elif node1 != None and node2 != None:
@@ -155,24 +205,34 @@ def genChildren(nodes, label1, rule, label2):
 	for plan in plans:
 		for node in addOneNode(plan, label, rule, node):
 			yield node
-	
+
+def genLeft(nodo, node1, new_label, newnodes):
+	newnode = Node(nodo.x -1, nodo.y, new_label)
+	for tomove in newnodes:
+		if tomove.x <= newnode.x and tomove != node1:
+			tomove.x = tomove.x -1
+	newnodes.append(newnode)
+	return newnodes
+
 def addOneNode(nodes, new_label, rule, node1):	
-	newnodes = None
 	for nodo in nodes:
+		newnodes = []
+		for old_node in nodes:
+			newnodes.append(Node(old_node.x,old_node.y,old_node.name))
+		#newnodes = nodes[:]
 		if rule == LEFT or rule == EVERYWHERE:
 			if rule == EVERYWHERE or nodo.y == node1.y and nodo.x <= node1.x :
-				newnode = Node(nodo.x -1, nodo.y, new_label)
-				newnodes = nodes[:]
+				yield genLeft(nodo, node1, new_label, newnodes)
+				'''newnode = Node(nodo.x -1, nodo.y, new_label)
 				for tomove in newnodes:
 					if tomove.x <= newnode.x and tomove != node1:
 						tomove.x = tomove.x -1
 				newnodes.append(newnode)
 				yield newnodes
-		
+'''		
 		elif rule == RIGHT or rule == EVERYWHERE:
 			if rule == EVERYWHERE or nodo.y == node1.y and nodo.x >= node1.x:
 				newnode = Node(nodo.x +1, nodo.y, new_label)
-				newnodes = nodes[:]
 				for tomove in newnodes:
 					if tomove.x >= newnode.x and tomove != node1:
 						tomove.x = tomove.x + 1
@@ -182,7 +242,6 @@ def addOneNode(nodes, new_label, rule, node1):
 		elif rule == UNDER or rule == EVERYWHERE:	
 			if rule == EVERYWHERE or nodo.x == node1.x and nodo.y <= node1.y:	
 				newnode = Node(nodo.x, nodo.y-1, new_label)
-				newnodes = nodes[:]
 				for tomove in newnodes:
 					if tomove.y <= newnode.y and tomove != node1:
 						tomove.y = tomove.y - 1
@@ -192,7 +251,6 @@ def addOneNode(nodes, new_label, rule, node1):
 		elif rule == OVER or rule == EVERYWHERE:
 			if rule == EVERYWHERE or nodo.x == node1.x and nodo.y >= node1.y:	
 				newnode = Node(nodo.x, nodo.y+1, new_label)
-				newnodes = nodes[:]
 				for tomove in newnodes:
 					if tomove.y >= newnode.x and tomove != node1:
 						tomove.y = tomove.y + 1
@@ -203,7 +261,7 @@ def main():
 	nodes = []
 	'''nodes.append(Node(0,0,'A'))
 	print nodes[0]'''
-	rules = [['B', RIGHT, 'A'],['B', LEFT, 'A']]
+	rules = [['B', LEFT, 'A'],['A', LEFT, 'D']]
 	plans = []
 	
 	rule = rules.pop()
@@ -221,7 +279,12 @@ def main():
 		print "rulla "+str(rule[1])
 		new_plans = []
 		for plan in plans:
-			for next_plan in genChildren(nodes, rule[0], rule[1], rule[2]):
+			print "OLD plan:" + str(plan)
+			for node in plan:
+				print "Node of the plan: " + str(node)
+			print "-----"
+				
+			for next_plan in genChildren(plan, rule[0], rule[1], rule[2]):
 				new_plans.append(next_plan)
 				print "A plan:" + str(next_plan)
 				for node in next_plan:
@@ -239,51 +302,9 @@ def main():
 			
 main()
 
-def equalizer(plan, origin):
-	skew_x = 0
-	skew_y = 0
-	for i in range(len(plan)):
-		if plan[i].name == origin.name:
-			skew_x = plan[i].x -origin.x
-			skew_y = plan[i].y -origin.y
-	for i in range(len(plan)):
-		plan[i].x = plan[i].x - skew_x
-		plan[i].y = plan[i].y - skew_y
-	return plan
+
 	
-def equalize_plans(plans):
-	equalizeds = []
-	if plans != [] and plans[0] != None:
-		label = plan[0][0]
-		for plan in plans:
-			equalizeds.append(equalizer(plan, plans[0][0]))
-		return equalizeds
-	else: 
-		print "Error empty plans!"
-		return None
-	
-def make_set(plans):
-	newplans = []
-	for i in range(len(plans)):
-		present = False
-		for j in range(len(newplans)):
-			if plans_eq(plans[i], newplans[j]):
-				present = True
-		if not present:
-			newplans.append(plans[i])
-	return newplans
-	
-def plans_eq(plan1, plan2):
-	if len(plan1) != len(plan2):
-		return False
-	for i in range(len(plan1)):
-		eq = False
-		for j in range(len(plan2)):
-			if plan1[i] == plan2[j]:
-				eq = True
-		if not eq:
-			return False
-	return True
+
 	
 
 
