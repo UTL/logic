@@ -198,19 +198,28 @@ def genChildren(nodes, label1, rule, label2):
 		print "n1"+str(node1)
 		print "n2"+str(node2)
 		print "Nodes not found, board not empty"
-		for plan in addOneNode(nodes, label1, EVERYWHERE, None):
+		for plan in addOneNode(nodes, label2, EVERYWHERE, None):
 			plans.append(plan)
 		plans = equalize_plans(plans)
 		plans = make_set(plans)
-		label  = label2
+		label  = label1
 		everywhere = True
 				
 	for plan in plans:
 		#se abbiamo generato piu piani bisogna trovare uno ad uno il nuovo nodo
 		if everywhere:
-			node = getNodeFromLabel(plan, label1)
+			node = getNodeFromLabel(plan, label2)
 		for nodus in addOneNode(plan, label, rule, node):
 			yield nodus
+'''	if everywhere and rule == LEFT:
+		edge_element = True
+		for i in range(len(nodes)):
+			for j in range(len(nodes)):
+				if	nodes[i].x == nodes[j].x - 1 and nodes[i].y == nodes[j].y:
+					edge_element = False
+			if edge_element:
+				pass'''
+			
 
 def genLeft(nodo, node1, new_label, newnodes):
 	newnode = Node(nodo.x -1, nodo.y, new_label)
@@ -239,7 +248,7 @@ def genUnder(nodo, node1, new_label, newnodes):
 def genOver(nodo, node1, new_label, newnodes):
 	newnode = Node(nodo.x, nodo.y+1, new_label)
 	for tomove in newnodes:
-		if tomove.y >= newnode.x and tomove != node1:
+		if tomove.y >= newnode.y and tomove != node1:
 			tomove.y = tomove.y + 1
 	newnodes.append(newnode)
 	return newnodes
