@@ -39,6 +39,42 @@ def opposite(rule):
 		OVER: UNDER,
 		UNDER: OVER,
 	}[rule]
+from collections import MutableSequence
+
+class ChainedList(MutableSequence):
+	def __init__(self):
+		super(ChainedList, self).__init__()
+		self._list = []
+
+	def __len__(self):
+		return len(self._list)
+
+	def __getitem__(self, index):
+		return self._list[index]
+
+	def __setitem__(self, index, value):
+		if not isinstance(value, Node):
+			raise TypeError('only Nodes accepted')
+		self._list[index] = value
+
+	def __delitem__(self, index):
+		del self._list[index]
+
+	def insert(self, index, value):
+		if not isinstance(value, Node):
+			raise TypeError('only integers accepted')
+		self._list.insert(index, value)
+	
+	parent = None
+	
+	def setFather(self, otherList):
+		self.parent = otherList
+		
+	#TODO: add 2d
+	'''
+	def __str__(self):
+		if self.parent != None:
+			outstr = str(self.parent)'''
 
 class Node(object):
 	def __init__(self, x, y, name):
