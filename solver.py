@@ -23,8 +23,9 @@ A,x=0,y=0 Left B,x=1,y=0 ? --> True
 A,x=0,y=0 Left B,x=1,y=1 ? --> True
 
 '''
-STRICT = True
-
+#TODO: still not implemented
+STRICT = True 
+IN_LINE = False
 '''
 def verify_rule(node1, rule, node2):
 	if RIGHTRULE == STRICT:
@@ -224,7 +225,7 @@ def genChildren(nodes, label1, rule, label2):
 def genLeft(nodo, node1, new_label, newnodes):
 	newnode = Node(nodo.x -1, nodo.y, new_label)
 	for tomove in newnodes:
-		if tomove.x <= newnode.x and tomove != node1:
+		if tomove.x <= newnode.x and tomove.y == newnode.y and tomove != node1:
 			tomove.x = tomove.x -1
 	newnodes.append(newnode)
 	return newnodes
@@ -232,7 +233,7 @@ def genLeft(nodo, node1, new_label, newnodes):
 def genRight(nodo, node1, new_label, newnodes):
 	newnode = Node(nodo.x +1, nodo.y, new_label)
 	for tomove in newnodes:
-		if tomove.x >= newnode.x and tomove != node1:
+		if tomove.x >= newnode.x and tomove.y == newnode.y and tomove != node1:
 			tomove.x = tomove.x + 1
 	newnodes.append(newnode)
 	return newnodes
@@ -240,7 +241,7 @@ def genRight(nodo, node1, new_label, newnodes):
 def genUnder(nodo, node1, new_label, newnodes):
 	newnode = Node(nodo.x, nodo.y-1, new_label)
 	for tomove in newnodes:
-		if tomove.y <= newnode.y and tomove != node1:
+		if tomove.y <= newnode.y and tomove.x == newnode.x  and tomove != node1:
 			tomove.y = tomove.y - 1
 	newnodes.append(newnode)
 	return newnodes
@@ -248,7 +249,7 @@ def genUnder(nodo, node1, new_label, newnodes):
 def genOver(nodo, node1, new_label, newnodes):
 	newnode = Node(nodo.x, nodo.y+1, new_label)
 	for tomove in newnodes:
-		if tomove.y >= newnode.y and tomove != node1:
+		if tomove.y >= newnode.y and tomove.x == newnode.x and tomove != node1:
 			tomove.y = tomove.y + 1
 	newnodes.append(newnode)
 	return newnodes
@@ -270,10 +271,11 @@ def addOneNode(nodes, new_label, rule, node1):
 			yield genLeft(nodo, node1, new_label, newnodes)
 			newnodes = clonePlan(nodes)
 			yield genRight(nodo, node1, new_label, newnodes)
-			newnodes = clonePlan(nodes)
-			yield genUnder(nodo, node1, new_label, newnodes)
-			newnodes = clonePlan(nodes)
-			yield genOver(nodo, node1, new_label, newnodes)
+			if not IN_LINE:
+				newnodes = clonePlan(nodes)
+				yield genUnder(nodo, node1, new_label, newnodes)
+				newnodes = clonePlan(nodes)
+				yield genOver(nodo, node1, new_label, newnodes)
 		
 		else:
 			if rule == RIGHT and nodo.y == node1.y and nodo.x >= node1.x:
