@@ -25,7 +25,7 @@ A,x=0,y=0 Left B,x=1,y=1 ? --> True
 '''
 #TODO: still not implemented
 STRICT = True 
-IN_LINE = False
+IN_LINE = True
 '''
 def verify_rule(node1, rule, node2):
 	if RIGHTRULE == STRICT:
@@ -130,24 +130,27 @@ def equalize_plans(plans):
 def plans_eq(plan1, plan2):
 	if len(plan1) != len(plan2):
 		return False
-	for i in range(len(plan1)):
-		eq = False
-		for j in range(len(plan2)):
-			if plan1[i] == plan2[j]:
-				eq = True
-		if not eq:
+	eq = True
+	for nodo1 in plan1:
+		nodo2 = getNodeFromLabel(plan2, nodo1.name)
+		if nodo2 == None:
 			return False
-	return True
+		else:
+			eq = eq and nodo2.x == nodo1.x and nodo2.y == nodo1.y
+			if not eq:
+				return False
+			
+	return eq
 	
 def make_set(plans):
 	newplans = []
-	for i in range(len(plans)):
+	for plan in plans:
 		present = False
-		for j in range(len(newplans)):
-			if plans_eq(plans[i], newplans[j]):
+		for new_plan in newplans:
+			if plans_eq(plan, new_plan):
 				present = True
 		if not present:
-			newplans.append(plans[i])
+			newplans.append(plan)
 	return newplans
 
 def genChildren(nodes, label1, rule, label2):
@@ -199,13 +202,38 @@ def genChildren(nodes, label1, rule, label2):
 		print "n1"+str(node1)
 		print "n2"+str(node2)
 		print "Nodes not found, board not empty"
+		
 		for plan in addOneNode(nodes, label2, EVERYWHERE, None):
 			plans.append(plan)
 		plans = equalize_plans(plans)
+		print "pl0: "+ str(len(plans))
 		plans = make_set(plans)
-		label  = label1
-		everywhere = True
-				
+		print "pl1: "+ str(len(plans))
+		redundant_plans = []
+		for plan in plans:
+			for nodus in addOneNode(plan, label1, rule,  getNodeFromLabel(plan, label2)):
+				redundant_plans.append( nodus)
+		print "rp0: "+ str(len(redundant_plans))
+		plans = []
+		
+		for plan in addOneNode(nodes, label1, EVERYWHERE, None):
+			plans.append(plan)
+		plans = equalize_plans(plans)
+		plans = make_set(plans)
+		for plan in plans:
+			for nodus in addOneNode(plan, label2, opposite(rule),  getNodeFromLabel(plan, label1)):
+				redundant_plans.append( nodus)
+		print "rp1: "+ str(len(redundant_plans))
+		redundant_plans = equalize_plans(redundant_plans)
+		redundant_plans = make_set(redundant_plans)
+		print "rp2: "+ str(len(redundant_plans))
+		
+		#TODO: orribile!
+		for plan in redundant_plans:
+			yield plan
+		
+		plans = []
+			
 	for plan in plans:
 		#se abbiamo generato piu piani bisogna trovare uno ad uno il nuovo nodo
 		if everywhere:
