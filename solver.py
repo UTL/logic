@@ -337,7 +337,8 @@ def generateGraph(name, data):
 			else: 
 				yield (st.lopperand,RIGHT,st.ropperand)
 
-def parse_rules(nodes, rules):
+def parse_rules(rules):
+	nodes = []
 	plans = []
 	rule = rules.pop()
 	print "rulla "+str(rule[1])
@@ -368,7 +369,6 @@ def parse_rules(nodes, rules):
 		plans = new_plans[:]
 
 def main():
-	nodes = []
 	rules = []
 	with open('./experimental_data.csv', 'r') as csvfile:
 		#with open('../Data/test.csv', 'r') as csvfile:
@@ -378,17 +378,18 @@ def main():
 			stdout.write('.')
 			stdout.flush()
 			print "ROW ", row[2], row[3:7]
-			if not rules:
-				for rule in generateGraph(row[2], row[3:7]):
-					rules.append(rule)
+			for rule in generateGraph(row[2], row[3:7]):
+				rules.append(rule)
+			parse_rules(rules)
+			rules = []
 	
 	stdout.write('\n')
 	stdout.flush()
 	'''nodes.append(Node(0,0,'A'))
 	print nodes[0]'''
 	rules = [['B', LEFT, 'A'],['D', LEFT, 'C']]
-	
-	parse_rules(nodes, rules)
+
+	parse_rules(rules)
 	
 	'''rule = rules.pop()
 	print "rulla "+str(rule[1])
