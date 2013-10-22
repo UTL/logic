@@ -337,28 +337,8 @@ def generateGraph(name, data):
 			else: 
 				yield (st.lopperand,RIGHT,st.ropperand)
 
-def main():
-	nodes = []
-	rules = []
-	with open('./experimental_data.csv', 'r') as csvfile:
-		#with open('../Data/test.csv', 'r') as csvfile:
-		csvFile = csv.reader(csvfile, delimiter=',', quotechar='"')
-		next(csvFile)                                                                    # skip headder
-		for row in csvFile:
-			stdout.write('.')
-			stdout.flush()
-			print "ROW ", row[2], row[3:7]
-			if not rules:
-				for rule in generateGraph(row[2], row[3:7]):
-					rules.append(rule)
-	
-	stdout.write('\n')
-	stdout.flush()
-	'''nodes.append(Node(0,0,'A'))
-	print nodes[0]'''
-	rules = [['B', LEFT, 'A'],['D', LEFT, 'C']]
+def parse_rules(nodes, rules):
 	plans = []
-	
 	rule = rules.pop()
 	print "rulla "+str(rule[1])
 	for next_plan in genChildren(nodes, rule[0], rule[1], rule[2]):
@@ -386,6 +366,59 @@ def main():
 					print "Node of the plan: " + str(node)
 				print "-----"
 		plans = new_plans[:]
+
+def main():
+	nodes = []
+	rules = []
+	with open('./experimental_data.csv', 'r') as csvfile:
+		#with open('../Data/test.csv', 'r') as csvfile:
+		csvFile = csv.reader(csvfile, delimiter=',', quotechar='"')
+		next(csvFile)                                                                    # skip headder
+		for row in csvFile:
+			stdout.write('.')
+			stdout.flush()
+			print "ROW ", row[2], row[3:7]
+			if not rules:
+				for rule in generateGraph(row[2], row[3:7]):
+					rules.append(rule)
+	
+	stdout.write('\n')
+	stdout.flush()
+	'''nodes.append(Node(0,0,'A'))
+	print nodes[0]'''
+	rules = [['B', LEFT, 'A'],['D', LEFT, 'C']]
+	
+	parse_rules(nodes, rules)
+	
+	'''rule = rules.pop()
+	print "rulla "+str(rule[1])
+	for next_plan in genChildren(nodes, rule[0], rule[1], rule[2]):
+			plans.append(next_plan)
+			print "A plan:" + str(next_plan)
+			for node in next_plan:
+				print "Node of the plan: " + str(node)
+			print "-----"
+	
+	while rules != [] and plans != [] :
+		print "While!!"
+		rule = rules.pop()
+		print "rulla "+str(rule[1])
+		new_plans = []
+		for plan in plans:
+			print "OLD plan:" + str(plan)
+			for node in plan:
+				print "Node of the plan: " + str(node)
+			print "-----"
+				
+			for next_plan in genChildren(plan, rule[0], rule[1], rule[2]):
+				new_plans.append(next_plan)
+				print "A plan:" + str(next_plan)
+				for node in next_plan:
+					print "Node of the plan: " + str(node)
+				print "-----"
+		plans = new_plans[:]'''
+	
+	
 '''			
 	for plan in plans:
 		for next_plan in genChildren(plan, 'C', OVER, 'A'):
