@@ -1,6 +1,6 @@
-from collections import deque
-from random import shuffle
-import time
+import csv
+from sys import stdout
+from rule_structure import Statement, rules
 
 FILENAME = "result.log"
 LEFT = 1
@@ -64,9 +64,6 @@ class Node(object):
 
 	def linear_repr(self):
 		return "["+''.join(self.l)+','+''.join(reversed(self.s))+','+''.join(reversed(self.r))+"]"'''
-
-
-
 
 
 def getNodeFromLabel(nodes, label):
@@ -318,8 +315,45 @@ def addOneNode(nodes, new_label, rule, node1):
 			elif rule == LEFT and nodo.y == node1.y and nodo.x <= node1.x :
 				yield genLeft(nodo, node1, new_label, newnodes)
 	
+relDic = {'left': 'l', 'right': 'r'}
+
+def analyzeStatement(inp):
+	vals = inp.split()
+	if (len(vals) == 3):
+		if vals[1] == 'right':
+			return Statement(vals[2], relDic['left'], vals[0])
+		return Statement(vals[0], relDic[vals[1]], vals[2])
+
+def generateGraph(name, data):
+	goal = analyzeStatement(data[-1])
+	if goal.relation == 'r':
+		goal = Statement(goal.ropperand, 'l', goal.lopperand)
+
+	for s in data[:-1]:
+		st = analyzeStatement(s)
+		if st:
+			if st.relation == "l":
+				yield (st.lopperand,LEFT,st.ropperand)
+			else: 
+				yield (st.lopperand,RIGHT,st.ropperand)
+
 def main():
 	nodes = []
+	rules = []
+	with open('./experimental_data.csv', 'r') as csvfile:
+		#with open('../Data/test.csv', 'r') as csvfile:
+		csvFile = csv.reader(csvfile, delimiter=',', quotechar='"')
+		next(csvFile)                                                                    # skip headder
+		for row in csvFile:
+			stdout.write('.')
+			stdout.flush()
+			print "ROW ", row[2], row[3:7]
+			if not rules:
+				for rule in generateGraph(row[2], row[3:7]):
+					rules.append(rule)
+	
+	stdout.write('\n')
+	stdout.flush()
 	'''nodes.append(Node(0,0,'A'))
 	print nodes[0]'''
 	rules = [['B', LEFT, 'A'],['D', LEFT, 'C']]
