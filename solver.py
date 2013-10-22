@@ -350,9 +350,7 @@ def parse_rules(rules):
 			print "-----"
 	
 	while rules != [] and plans != [] :
-		print "While!!"
 		rule = rules.pop()
-		print "rulla "+str(rule[1])
 		new_plans = []
 		for plan in plans:
 			print "OLD plan:" + str(plan)
@@ -362,13 +360,34 @@ def parse_rules(rules):
 				
 			for next_plan in genChildren(plan, rule[0], rule[1], rule[2]):
 				new_plans.append(next_plan)
+				write_plan(next_plan)
 				print "A plan:" + str(next_plan)
 				for node in next_plan:
 					print "Node of the plan: " + str(node)
+					
 				print "-----"
 		plans = new_plans[:]
 
+def clear_log():
+	out_file = open(FILENAME,"w")
+	out_file.write("")
+	out_file.close()
+
+def write_plan(plan):
+	out_file = open(FILENAME,"a")
+	out_file.write("---PLAN---\n")
+	for node in plan:
+		if IN_LINE:
+			out_file.write(node.name+","+ str(node.x)+"_")
+		else:
+			#TODO: fare la versione 2d
+			pass
+	out_file.write("\n")
+	out_file.close() #TODO: too many open/close!
+		
 def main():
+	
+	clear_log()
 	rules = []
 	with open('./experimental_data.csv', 'r') as csvfile:
 		#with open('../Data/test.csv', 'r') as csvfile:
@@ -387,9 +406,9 @@ def main():
 	stdout.flush()
 	'''nodes.append(Node(0,0,'A'))
 	print nodes[0]'''
-	rules = [['B', LEFT, 'A'],['D', LEFT, 'C']]
+	#rules = [['B', LEFT, 'A'],['D', LEFT, 'C']]
 
-	parse_rules(rules)
+	#parse_rules(rules)
 	
 	'''rule = rules.pop()
 	print "rulla "+str(rule[1])
