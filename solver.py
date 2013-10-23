@@ -62,12 +62,17 @@ class ChainedList(MutableSequence):
 
 	def insert(self, index, value):
 		if not isinstance(value, Node):
-			raise TypeError('only integers accepted')
+			raise TypeError('only ChainedLists accepted')
 		self._list.insert(index, value)
 	
 	parent = None
 	
+	def getFather(self):
+		return self.parent
+	
 	def setFather(self, otherList):
+		if not isinstance(otherList, ChainedList):
+			raise TypeError('only ChainedLists accepted')
 		self.parent = otherList
 		
 	#TODO: add 2d
@@ -78,6 +83,10 @@ class ChainedList(MutableSequence):
 
 class Node(object):
 	def __init__(self, x, y, name):
+		if not isinstance(x, int):
+			raise TypeError('x must be integer')
+		if not isinstance(y, int):
+			raise TypeError('y must be integer')
 		self.x = x
 		self.y = y
 		self.name = name
@@ -483,8 +492,12 @@ def main():
 				print(node)
 			print "-----"'''
 
-			
-main()
+def main2():
+	a = ChainedList()
+	a.append(Node(1,2,"a"))
+	b = a.pop()
+	print b.x
+main2()
 
 
 	
