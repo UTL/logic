@@ -71,13 +71,13 @@ class ChainedList(MutableSequence):
 		newChained = ChainedList()
 		for element in self:
 			newChained.append(Node(element.x,element.y,element.name))
-		newChained.setFather(self.parent)
+		newChained.setParent(self.parent)
 		return newChained
 	
-	def getFather(self):
+	def getParent(self):
 		return self.parent
 	
-	def setFather(self, otherList):
+	def setParent(self, otherList):
 		if not isinstance(otherList, ChainedList) and otherList != None:
 			raise TypeError('only ChainedLists accepted')
 		self.parent = otherList
@@ -91,7 +91,7 @@ class ChainedList(MutableSequence):
 	def __str__(self):
 		if self.parent == None:
 			return  self.printAll()
-		return str(self.parent) + "\n" + self.printAll
+		return str(self.parent) + "\n" + self.printAll()
 				
 	
 	#TODO: add 2d
@@ -345,27 +345,31 @@ def genOver(nodo, node1, new_label, newnodes):
 	newnodes.append(newnode)
 	return newnodes
 	
-def clonePlan(oldplan):	
+'''def clonePlan(oldplan):	
 	newplan = []
 	for old_node in oldplan:
 		newplan.append(Node(old_node.x,old_node.y,old_node.name))
-	return newplan
+	return newplan'''
 			
 def addOneNode(nodes, new_label, rule, node1):	
 	for nodo in nodes:
 		#FIXME! Se fosse programmato meglio non ce ne sarebbe bisogno! I vari gen non dovrebbero 
 		# toccacciare le variabili in ingresso
 		newnodes = nodes.clone()
+		newnodes.setParent(nodes)
 		
 		#newnodes = nodes[:]
 		if rule == EVERYWHERE:
 			yield genLeft(nodo, node1, new_label, newnodes)
 			newnodes = nodes.clone()
+			newnodes.setParent(nodes)
 			yield genRight(nodo, node1, new_label, newnodes)
 			if not IN_LINE:
 				newnodes = nodes.clone
+				newnodes.setParent(nodes)
 				yield genUnder(nodo, node1, new_label, newnodes)
 				newnodes = nodes.clone()
+				newnodes.setParent(nodes)
 				yield genOver(nodo, node1, new_label, newnodes)
 		
 		else:
