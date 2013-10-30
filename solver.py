@@ -67,6 +67,13 @@ class ChainedList(MutableSequence):
 	
 	parent = None
 	
+	def clone(self):
+		newChained = ChainedList()
+		for element in self:
+			newChained.append(Node(element.x,element.y,element.name))
+		newChained.setFather(self.parent)
+		return newChained
+	
 	def getFather(self):
 		return self.parent
 	
@@ -383,7 +390,7 @@ def generateGraph(name, data):
 				yield (st.lopperand,RIGHT,st.ropperand)
 
 def parse_rules(rules):
-	nodes = []
+	nodes = ChainedList()
 	plans = []
 	rule = rules.pop()
 	print "rulla "+str(rule[1])
@@ -433,7 +440,9 @@ def write_plan(plan):
 def main():
 	
 	clear_log()
+	#list of rules to satisfy
 	rules = []
+	#TODO: incapsulare
 	with open('./experimental_data.csv', 'r') as csvfile:
 		#with open('../Data/test.csv', 'r') as csvfile:
 		csvFile = csv.reader(csvfile, delimiter=',', quotechar='"')
@@ -444,6 +453,7 @@ def main():
 			print "ROW ", row[2], row[3:7]
 			for rule in generateGraph(row[2], row[3:7]):
 				rules.append(rule)
+			#calculates the plans
 			parse_rules(rules)
 			rules = []
 	
@@ -497,7 +507,7 @@ def main2():
 	a.append(Node(1,2,"a"))
 	b = a.pop()
 	print b.x
-main2()
+main()
 
 
 	
