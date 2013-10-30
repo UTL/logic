@@ -62,7 +62,7 @@ class ChainedList(MutableSequence):
 
 	def insert(self, index, value):
 		if not isinstance(value, Node):
-			raise TypeError('only ChainedLists accepted')
+			raise TypeError('only Nodes accepted')
 		self._list.insert(index, value)
 	
 	parent = None
@@ -78,7 +78,7 @@ class ChainedList(MutableSequence):
 		return self.parent
 	
 	def setFather(self, otherList):
-		if not isinstance(otherList, ChainedList):
+		if not isinstance(otherList, ChainedList) and otherList != None:
 			raise TypeError('only ChainedLists accepted')
 		self.parent = otherList
 		
@@ -221,7 +221,7 @@ def genChildren(nodes, label1, rule, label2):
 	everywhere = False
 	
 	#board vuota
-	if nodes == []:
+	if len(nodes)==0:
 		print "Inizializing board"
 		plans.append(nodes)
 		label = label1
@@ -341,17 +341,17 @@ def addOneNode(nodes, new_label, rule, node1):
 	for nodo in nodes:
 		#FIXME! Se fosse programmato meglio non ce ne sarebbe bisogno! I vari gen non dovrebbero 
 		# toccacciare le variabili in ingresso
-		newnodes = clonePlan(nodes)
+		newnodes = nodes.clone()
 		
 		#newnodes = nodes[:]
 		if rule == EVERYWHERE:
 			yield genLeft(nodo, node1, new_label, newnodes)
-			newnodes = clonePlan(nodes)
+			newnodes = nodes.clone()
 			yield genRight(nodo, node1, new_label, newnodes)
 			if not IN_LINE:
-				newnodes = clonePlan(nodes)
+				newnodes = nodes.clone
 				yield genUnder(nodo, node1, new_label, newnodes)
-				newnodes = clonePlan(nodes)
+				newnodes = nodes.clone()
 				yield genOver(nodo, node1, new_label, newnodes)
 		
 		else:
@@ -396,28 +396,28 @@ def parse_rules(rules):
 	print "rulla "+str(rule[1])
 	for next_plan in genChildren(nodes, rule[0], rule[1], rule[2]):
 			plans.append(next_plan)
-			print "A plan:" + str(next_plan)
-			for node in next_plan:
-				print "Node of the plan: " + str(node)
-			print "-----"
+			#print "A plan:" + str(next_plan)
+			#for node in next_plan:
+			#	print "Node of the plan: " + str(node)
+			#print "-----"
 	
 	while rules != [] and plans != [] :
 		rule = rules.pop()
 		new_plans = []
 		for plan in plans:
-			print "OLD plan:" + str(plan)
-			for node in plan:
-				print "Node of the plan: " + str(node)
-			print "-----"
+			#print "OLD plan:" + str(plan)
+			#for node in plan:
+			#	print "Node of the plan: " + str(node)
+			#print "-----"
 				
 			for next_plan in genChildren(plan, rule[0], rule[1], rule[2]):
 				new_plans.append(next_plan)
 				write_plan(next_plan)
-				print "A plan:" + str(next_plan)
-				for node in next_plan:
-					print "Node of the plan: " + str(node)
+			#	print "A plan:" + str(next_plan)
+			#	for node in next_plan:
+			#		print "Node of the plan: " + str(node)
 					
-				print "-----"
+			#	print "-----"
 		plans = new_plans[:]
 
 def clear_log():
@@ -440,9 +440,7 @@ def write_plan(plan):
 def main():
 	
 	clear_log()
-	#list of rules to satisfy
 	rules = []
-	#TODO: incapsulare
 	with open('./experimental_data.csv', 'r') as csvfile:
 		#with open('../Data/test.csv', 'r') as csvfile:
 		csvFile = csv.reader(csvfile, delimiter=',', quotechar='"')
@@ -453,7 +451,6 @@ def main():
 			print "ROW ", row[2], row[3:7]
 			for rule in generateGraph(row[2], row[3:7]):
 				rules.append(rule)
-			#calculates the plans
 			parse_rules(rules)
 			rules = []
 	
