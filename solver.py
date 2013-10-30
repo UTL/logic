@@ -82,6 +82,18 @@ class ChainedList(MutableSequence):
 			raise TypeError('only ChainedLists accepted')
 		self.parent = otherList
 		
+	def printAll(self):
+		output = ""
+		for elem in self:
+			output = output + str(elem)
+		return output
+	
+	def __str__(self):
+		if self.parent == None:
+			return  self.printAll()
+		return str(self.parent) + "\n" + self.printAll
+				
+	
 	#TODO: add 2d
 	'''
 	def __str__(self):
@@ -100,6 +112,8 @@ class Node(object):
 		#self.myhash = None
 
 	def __str__(self):
+		if IN_LINE:
+			return str((self.x, self.name))
 		return str((self.x,self.y, self.name))
 		
 	'''def __repr__(self):
@@ -428,12 +442,14 @@ def clear_log():
 def write_plan(plan):
 	out_file = open(FILENAME,"a")
 	out_file.write("---PLAN---\n")
+	out_file.write(str(plan))
+	'''
 	for node in plan:
 		if IN_LINE:
 			out_file.write(node.name+","+ str(node.x)+"_")
 		else:
 			#TODO: fare la versione 2d
-			pass
+			pass'''
 	out_file.write("\n")
 	out_file.close() #TODO: too many open/close!
 		
@@ -505,10 +521,4 @@ def main2():
 	b = a.pop()
 	print b.x
 main()
-
-
-	
-
-	
-
 
