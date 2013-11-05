@@ -25,7 +25,10 @@ A,x=0,y=0 Left B,x=1,y=1 ? --> True
 '''
 #TODO: still not implemented
 STRICT = True 
+#If True generates only 1d plans
 IN_LINE = True
+
+
 '''
 def verify_rule(node1, rule, node2):
 	if RIGHTRULE == STRICT:
@@ -115,6 +118,86 @@ class Node(object):
 		if IN_LINE:
 			return str((self.x, self.name))
 		return str((self.x,self.y, self.name))
+	
+	def compareEq(self, otherNode, rule):
+		if rule == LEFT:
+			return self.isLeftOrEq(otherNode)
+		elif rule == RIGHT:
+			return self.isRightOrEq(otherNode)
+		elif rule == OVER:
+			return self.isOverOrEq(otherNode)
+		elif rule == UNDER:
+			return self.isUnderOrEq(otherNode)
+		else:
+			raise TypeError('Invalid rule')
+	
+	def compare(self, otherNode, rule):
+		if rule == LEFT:
+			return self.isLeft(otherNode)
+		elif rule == RIGHT:
+			return self.isRight(otherNode)
+		elif rule == OVER:
+			return self.isOver(otherNode)
+		elif rule == UNDER:
+			return self.isUnder(otherNode)
+		else:
+			raise TypeError('Invalid rule')
+		
+	def isLeft(self, otherNode):
+		if not isinstance(otherNode, Node):
+			raise TypeError('Argument must be Node')
+		if STRICT:
+			return self.x < otherNode.x and otherNode.y == self.y
+		return self.x < otherNode.x
+		
+	def isRight(self, otherNode):
+		if not isinstance(otherNode, Node):
+			raise TypeError('Argument must be Node')
+		if STRICT:
+			return self.x > otherNode.x and otherNode.y == self.y
+		return self.x > otherNode.x
+	
+	def isOver(self, otherNode):
+		if not isinstance(otherNode, Node):
+			raise TypeError('Argument must be Node')
+		if STRICT:
+			return self.y > otherNode.y and self.x == otherNode.x
+		return self.y > otherNode.y 
+	
+	def isUnder(self, otherNode):
+		if not isinstance(otherNode, Node):
+			raise TypeError('Argument must be Node')
+		if STRICT:
+			return self.y < otherNode.y and self.x == otherNode.x
+		return self.y < otherNode.y
+	
+	def isLeftOrEq(self, otherNode):
+		if not isinstance(otherNode, Node):
+			raise TypeError('Argument must be Node')
+		if STRICT:
+			return self.x <= otherNode.x and otherNode.y == self.y
+		return self.x <= otherNode.x
+		
+	def isRightOrEq(self, otherNode):
+		if not isinstance(otherNode, Node):
+			raise TypeError('Argument must be Node')
+		if STRICT:
+			return self.x >= otherNode.x and otherNode.y == self.y
+		return self.x >= otherNode.x
+	
+	def isOverOrEq(self, otherNode):
+		if not isinstance(otherNode, Node):
+			raise TypeError('Argument must be Node')
+		if STRICT:
+			return self.y >= otherNode.y and self.x == otherNode.x
+		return self.y >= otherNode.y 
+	
+	def isUnderOrEq(self, otherNode):
+		if not isinstance(otherNode, Node):
+			raise TypeError('Argument must be Node')
+		if STRICT:
+			return self.y <= otherNode.y and self.x == otherNode.x
+		return self.y <= otherNode.y
 		
 	'''def __repr__(self):
 		return str((self.x,self.y))
@@ -150,6 +233,10 @@ def filtro(plan, label1, rule, label2):
 			n1 = plan[i]
 		elif plan[i].name == label2:
 			n2 = plan[i]
+	
+	return n1.compare(n2, rule)
+
+'''			
 	if rule == LEFT:
 		if n1.y == n2.y and n1.x < n2.x:
 			return True
@@ -163,9 +250,9 @@ def filtro(plan, label1, rule, label2):
 			return True
 		return False	
 	elif rule == UNDER:
-		if n1.x == n2.x and n1.y > n2.y:
+		if n1.x == n2.x and n1.y < n2.y:
 			return True
-		return False
+		return False'''
 
 def equalizer(plan, origin):
 	skew_x = 0
@@ -373,16 +460,16 @@ def addOneNode(nodes, new_label, rule, node1):
 				yield genOver(nodo, node1, new_label, newnodes)
 		
 		else:
-			if rule == RIGHT and nodo.y == node1.y and nodo.x >= node1.x:
+			if rule == RIGHT and nodo.compareEq(node1, rule):
 				yield genRight(nodo, node1, new_label, newnodes)
 	
-			elif rule == UNDER and nodo.x == node1.x and nodo.y <= node1.y:	
+			elif rule == UNDER and nodo.compareEq(node1, rule):	
 				yield genUnder(nodo, node1, new_label, newnodes)
 			
-			elif rule == OVER and nodo.x == node1.x and nodo.y >= node1.y:	
+			elif rule == OVER and nodo.compareEq(node1, rule):	
 				yield genOver(nodo, node1, new_label, newnodes)
 				
-			elif rule == LEFT and nodo.y == node1.y and nodo.x <= node1.x :
+			elif rule == LEFT and nodo.compareEq(node1, rule):
 				yield genLeft(nodo, node1, new_label, newnodes)
 	
 relDic = {'left': 'l', 'right': 'r'}
